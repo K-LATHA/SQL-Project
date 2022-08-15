@@ -1,0 +1,88 @@
+select * from project.dataset1;
+select * from project.dataset2;
+
+Task-1
+- - number of rows in the dataset
+
+select count(*) from project.dataset1
+select count(*) from project.dataset2
+
+Task-2
+- - dataset for jharkhand and bihar
+
+select * from project.dataset1 where state in ('Jharkhand' ,'Bihar')
+
+Task-3
+- - total population of India
+
+select sum(population) as Population from project.dataset2
+
+Task-4
+- -avg growth 
+
+select state,avg(growth) avg_growth from project.dataset1 group by state;
+
+Task-5
+- -avg sex ratio
+
+select state,round(avg(sex_ratio),0) as avg_sex_ratio from project.dataset1 group by state order by avg_sex_ratio desc;
+
+Task-6
+- -states which have average literacy rate greater than 90
+
+select state,round(avg(literacy),0) avg_literacy_ratio from project..data1 
+group by state having round(avg(literacy),0)>90 order by avg_literacy_ratio desc ;
+
+Task-7
+- -top 3 states with highest growth ratio
+
+select state,avg(growth)*100 avg_growth from project.dataset1 group by state order by avg_growth desc limit 3;
+
+Task-8
+- -bottom 5 States with least literacy rate
+
+select state, literacy from project.dataset1 group by state   order by literacy desc limit 5;
+
+Task-9
+- -creating a temporary table to show top 3 states and bottom 3 states by literacy rate
+
+create table project.states1(select state, literacy from project.dataset1 group by state   order by literacy desc limit 5);
+create table project.states2(select state, literacy from project.dataset1 group by state   order by literacy asc limit 5);
+
+(select* from project.states1)
+union
+(select* from project.states2) ;
+
+Task-10
+- -states starting with letter a
+
+select distinct state from project.dataset1 where lower(state) like 'a%';
+
+Task-11
+- -show total males and females
+
+select d.state,sum(d.males) total_males,sum(d.females) total_females from
+(select c.district,c.state state,round(c.population/(c.sex_ratio+1),0) males, round((c.population*c.sex_ratio)/(c.sex_ratio+1),0) females from
+(select a.district,a.state,a.sex_ratio/1000 sex_ratio,b.population from project.dataset1 a inner join project.dataset2 b on a.district=b.district ) c) d
+group by d.state;
+
+Task-12
+- -population in previous census
+
+select sum(m.previous_census_population) previous_census_population,sum(m.current_census_population) current_census_population from(
+select e.state,sum(e.previous_census_population) previous_census_population,sum(e.current_census_population) current_census_population from
+(select d.district,d.state,round(d.population/(1+d.growth),0) previous_census_population,d.population current_census_population from
+(select a.district,a.state,a.growth growth,b.population from project.dataset1 a inner join project.dataset2 b on a.district=b.district) d) e
+group by e.state)m
+
+Task-13
+- -output top 3 districts from each state with highest literacy rate(using windows)
+
+select a.* from
+(select district,state,literacy,rank() over(partition by state order by literacy desc) rnk from project.dataset1) a
+where a.rnk in (1,2,3) order by state
+
+
+
+
+
